@@ -2,6 +2,9 @@ HELP.md
 /target/
 /.mvn/wrapper/
 
+# Exclude private credentials
+src/main/resources/database-config.properties
+
 ### STS ###
 .apt_generated
 .factorypath
