@@ -1,5 +1,6 @@
 package com.sst.utopia.booking.model;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import javax.persistence.Column;
@@ -13,11 +14,19 @@ import javax.persistence.Table;
  * Objects of this class should in general be immutable, so no setters are
  * provided, but to support JPA providers fields are not made final.
  *
+ * This class is Serializable because AirportDateDTO has to be and contains a
+ * reference to this class.
+ *
  * @author Jonathan Lovelace
  */
 @Entity
 @Table(name = "tbl_airports")
-public class Airport {
+public class Airport implements Serializable {
+	/**
+	 * Serialization version. Increment on any change to class structure that is (to
+	 * be) pushed to production.
+	 */
+	private static final long serialVersionUID = 1L;
 	/**
 	 * The code identifying the airport.
 	 */

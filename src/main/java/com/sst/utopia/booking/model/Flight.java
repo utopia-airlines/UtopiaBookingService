@@ -1,5 +1,6 @@
 package com.sst.utopia.booking.model;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import javax.persistence.AttributeOverride;
@@ -20,11 +21,20 @@ import javax.persistence.Table;
  * let alone the Booking service), and so have not provided setters, fields are
  * left non-final for the JPA.
  *
+ * This class is Serializable because SeatLocation has to be and contains a
+ * reference to a Flight object.
+ *
  * @author Jonathan Lovelace
  */
 @Entity
 @Table(name = "tbl_flights")
-public class Flight {
+public class Flight implements Serializable {
+	/**
+	 * Serialization version. Increment on any change to class structure that is (to
+	 * be) pushed to production.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * The flight's ID number in the database.
 	 */
@@ -47,9 +57,8 @@ public class Flight {
 	 */
 	@Embedded
 	@AttributeOverrides({
-		@AttributeOverride(name = "airport", column = @Column(name = "destination")),
-		@AttributeOverride(name = "date", column = @Column(name = "arrival_date"))
-	})
+			@AttributeOverride(name = "airport", column = @Column(name = "destination")),
+			@AttributeOverride(name = "date", column = @Column(name = "arrival_date")) })
 	private AirportDateDTO arrival;
 
 	/**

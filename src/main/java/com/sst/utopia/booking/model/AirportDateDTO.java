@@ -1,5 +1,6 @@
 package com.sst.utopia.booking.model;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -7,13 +8,19 @@ import javax.persistence.Embeddable;
 
 /**
  * A particular airport at a particular date. This class only exists because
- * this combination occurs twice in a Flight object.
+ * this combination occurs twice in a Flight object. It is Serializable because
+ * Flight has to be and contains a reference to an object of this class.
  *
  * @author Jonathan Lovelace
  *
  */
 @Embeddable
-public class AirportDateDTO {
+public class AirportDateDTO implements Serializable {
+	/**
+	 * Serialization version. Increment on any change to class structure that is (to
+	 * be) pushed to production.
+	 */
+	private static final long serialVersionUID = 1L;
 	/**
 	 * The airport that the flight is departing from or arriving at.
 	 */
