@@ -59,6 +59,14 @@ public class Ticket {
 	private LocalDateTime reservationTimeout;
 
 	/**
+	 * The "ID" that customers can use to refer to their booking; it is (intended to
+	 * be) a hash of the flight, row, seat, and reserver, and must be set when
+	 * 'reserver' is set.
+	 */
+	@Column(nullable = true)
+	private String bookingId;
+
+	/**
 	 * @return the flight, row, and seat that together uniquely identify this
 	 *         ticket.
 	 */
@@ -97,6 +105,13 @@ public class Ticket {
 	}
 
 	/**
+	 * @return the "booking ID" shared with the ticket-holder, or null if not yet booked.
+	 */
+	public String getBookingId() {
+		return bookingId;
+	}
+
+	/**
 	 * If the ticket-holder is set to null, price and reservationTimeout are also
 	 * set to null.
 	 *
@@ -106,6 +121,7 @@ public class Ticket {
 		if (reserver == null) {
 			price = null;
 			reservationTimeout = null;
+			bookingId = null;
 		}
 		this.reserver = reserver;
 	}
@@ -145,11 +161,28 @@ public class Ticket {
 	}
 
 	/**
+	 * This method throws if the booking ID is not null but the reserver is, or vice
+	 * versa.
+	 * @param bookingId the new booking ID.
+	 * @throws IllegalStateException if it is null when reserver is not or it is not null when reserver is
+	 */
+	public void setBookingId(final String bookingId) {
+		if (reserver == null && bookingId != null) {
+			throw new IllegalStateException("Unbooked seat cannot have a booking ID");
+		} else if (reserver != null && bookingId == null) {
+			throw new IllegalStateException("Booked seat must have booking ID");
+		}
+		this.bookingId = bookingId;
+	}
+
+	/**
 	 * @return whether this object's state is internally consistent.
 	 */
 	public boolean isValid() {
 		if (reserver == null) {
-			return reservationTimeout == null && price == null;
+			return reservationTimeout == null && price == null && bookingId == null;
+		} else if (bookingId == null) {
+			return false;
 		} else if (price == null) {
 			return reservationTimeout != null;
 		} else {

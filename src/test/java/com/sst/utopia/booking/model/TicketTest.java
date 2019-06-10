@@ -36,6 +36,16 @@ public class TicketTest {
 	}
 
 	@Test
+	public final void testClearingReserverClearsBookingId() {
+		final Ticket ticket = new Ticket();
+		ticket.setReserver(new User());
+		ticket.setBookingId("abc123");
+		ticket.setReserver(null);
+		assertNull(ticket.getBookingId(),
+				"Setting reserver to null sets booking ID to null");
+	}
+
+	@Test
 	public final void testNoPriceWithoutReservation() {
 		assertThrows(IllegalStateException.class, () -> new Ticket().setPrice(500),
 				"Can't set price-paid for an unbooked ticket");
@@ -63,6 +73,8 @@ public class TicketTest {
 		final Ticket ticket = new Ticket();
 		assertTrue(ticket.isValid(), "No reserver, no price, no timeout is valid");
 		ticket.setReserver(new User());
+		assertFalse(ticket.isValid(), "Reserved ticket without booking ID is not valid");
+		ticket.setBookingId("bookingId");
 		assertFalse(ticket.isValid(),
 				"Reserved ticket with neither price nor timeout is not valid");
 		ticket.setPrice(300);
