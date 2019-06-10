@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
@@ -22,6 +23,7 @@ import com.sst.utopia.booking.model.User;
  *
  * @author Jonathan Lovelace
  */
+@Service
 public final class BookingService {
 	/**
 	 * DAO to access ticket table.
