@@ -49,6 +49,16 @@ public class TicketTest {
 	}
 
 	@Test
+	public final void testNoTimeoutForConfirmedTicket() {
+		final Ticket ticket = new Ticket();
+		ticket.setReserver(new User());
+		ticket.setPrice(150);
+		assertThrows(IllegalStateException.class,
+				() -> ticket.setReservationTimeout(LocalDateTime.now()),
+				"Can't set timeout for an already-paid ticket");
+	}
+
+	@Test
 	public final void testIsValid() {
 		final Ticket ticket = new Ticket();
 		assertTrue(ticket.isValid(), "No reserver, no price, no timeout is valid");
@@ -57,9 +67,8 @@ public class TicketTest {
 				"Reserved ticket with neither price nor timeout is not valid");
 		ticket.setPrice(300);
 		assertTrue(ticket.isValid(), "Reserved ticket with price but no timeout is valid");
-		ticket.setReservationTimeout(LocalDateTime.now());
-		assertFalse(ticket.isValid(), "Reserved ticket with price and timeout is not valid");
 		ticket.setPrice(null);
+		ticket.setReservationTimeout(LocalDateTime.now());
 		assertTrue(ticket.isValid(), "Reserved ticket with timeout but no price is valid");
 	}
 }

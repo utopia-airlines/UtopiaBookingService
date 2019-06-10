@@ -127,12 +127,19 @@ public class Ticket {
 	}
 
 	/**
-	 * This method throws if the new timeout is not null but reserver is.
+	 * This method throws if the new timeout is not null but reserver is, or if the
+	 * reservation has been made and confirmed (price is not null).
+	 *
 	 * @param reservationTimeout when the reservation will expire if not paid for.
+	 * @throws IllegalStateException if timeout is not null but reserver is, or if
+	 *                               new timeout and existing price are both not
+	 *                               null
 	 */
 	public void setReservationTimeout(final LocalDateTime reservationTimeout) {
 		if (reserver == null && reservationTimeout != null) {
 			throw new IllegalStateException("Tickets only expire if someone reserved them");
+		} else if (reserver != null && price != null && reservationTimeout != null) {
+			throw new IllegalStateException("Only unconfirmed bookings can time out");
 		}
 		this.reservationTimeout = reservationTimeout;
 	}
