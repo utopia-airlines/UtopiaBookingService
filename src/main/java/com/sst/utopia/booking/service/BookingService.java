@@ -1,6 +1,7 @@
 package com.sst.utopia.booking.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -176,6 +177,25 @@ public final class BookingService {
 	}
 
 	/**
+	 * Mark the ticket with the given booking ID as having been paid for at the
+	 * specified price.
+	 * @param bookingId the booking-ID for the ticket in question.
+	 * @param price the price the ticket-holder paid
+	 * @return the updated booking information
+	 * @throws IllegalArgumentException if that booking ID does not refer to a booked ticket or if the ticket has already been paid for
+	 */
+	public Ticket acceptPayment(final String bookingId, final int price) {
+		final List<Ticket> matchingTickets = ticketDao.findByBookingId(bookingId);
+		if (matchingTickets.isEmpty()) {
+			throw new IllegalArgumentException("No such ticket");
+		} else if (matchingTickets.size() > 1) {
+			throw new IllegalStateException("Uniqueness constraint violated");
+		} else {
+			return acceptPayment(matchingTickets.get(0), price);
+		}
+	}
+
+	/**
 	 * Cancel a reservation that has been made but not paid for. We assume that this
 	 * will usually be called by some background process (cron job equivalent) to
 	 * clean up unconfirmed bookings, but the frontend may call it either when the
@@ -201,4 +221,20 @@ public final class BookingService {
 		commit();
 	}
 
+	/**
+	 * Cancel a reservation that has been made but not paid for, by its booking ID.
+	 *
+	 * @param bookingId the booking ID of the booking in question
+	 * @throws IllegalArgumentException if the ticket has been paid for
+	 */
+	public void cancelPendingReservation(final String bookingId) {
+		final List<Ticket> matchingTickets = ticketDao.findByBookingId(bookingId);
+		if (!matchingTickets.isEmpty()) {
+			if (matchingTickets.size() > 1) {
+				throw new IllegalStateException("Uniqueness constraint violated");
+			} else {
+				cancelPendingReservation(matchingTickets.get(0));
+			}
+		}
+	}
 }
