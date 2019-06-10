@@ -174,4 +174,31 @@ public final class BookingService {
 		commit();
 		return booking;
 	}
+
+	/**
+	 * Cancel a reservation that has been made but not paid for. We assume that this
+	 * will usually be called by some background process (cron job equivalent) to
+	 * clean up unconfirmed bookings, but the frontend may call it either when the
+	 * ticket times out or if the user explicitly cancels before paying.
+	 *
+	 * @param ticket the booking in question (only the ID fields are used)
+	 * @throws IllegalArgumentException if the ticket has been paid for
+	 */
+	public void cancelPendingReservation(final Ticket ticket) {
+		final Ticket booking = ticketDao.getOne(ticket.getId());
+		if (booking.getReserver() == null) {
+			return;
+		} else if (booking.getPrice() != null) {
+			throw new IllegalArgumentException("Ticket has been paid for");
+		}
+		beginTransaction();
+		try {
+			booking.setReserver(null);
+			ticketDao.saveAndFlush(booking);
+		} catch (final RuntimeException exception) {
+			throw rollback(exception);
+		}
+		commit();
+	}
+
 }
