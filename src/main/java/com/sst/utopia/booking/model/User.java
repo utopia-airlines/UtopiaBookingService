@@ -71,6 +71,7 @@ public class User {
 	public User(final int id, final String username, final String displayName, final String email, final String phone) {
 		this.id = id;
 		this.username = username;
+		this.displayName = displayName;
 		this.email = email;
 		this.phone = phone;
 	}
