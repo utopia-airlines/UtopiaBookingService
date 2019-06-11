@@ -14,7 +14,9 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.util.DigestUtils;
 
+import com.sst.utopia.booking.dao.FlightDao;
 import com.sst.utopia.booking.dao.TicketDao;
+import com.sst.utopia.booking.model.Flight;
 import com.sst.utopia.booking.model.SeatLocation;
 import com.sst.utopia.booking.model.Ticket;
 import com.sst.utopia.booking.model.User;
@@ -34,6 +36,12 @@ public final class BookingService {
 	 */
 	@Autowired
 	private TicketDao ticketDao;
+
+	/**
+	 * DAO to access flight ticket.
+	 */
+	@Autowired
+	private FlightDao flightDao;
 
 	/**
 	 * Default unpaid-booking expiration, in minutes.
@@ -106,6 +114,19 @@ public final class BookingService {
 			transaction = null;
 		}
 		return pending;
+	}
+	/**
+	 * Get a specified
+	 * @param flightNumber the flight-number of a flight
+	 * @return the flight with that number, or null if there
+	 */
+	public Flight getFlight(final int flightNumber) {
+		final List<Flight> list = flightDao.findByFlightNumber(flightNumber);
+		if (list.isEmpty()) {
+			return null;
+		} else {
+			return list.get(0);
+		}
 	}
 
 	/**
