@@ -60,6 +60,22 @@ public class User {
 	private String phone;
 
 	/**
+	 * Default constructor, for JPA.
+	 */
+	public User() {
+	}
+
+	/**
+	 * Full-fledged constructor, for tests.
+	 */
+	public User(final int id, final String username, final String displayName, final String email, final String phone) {
+		this.id = id;
+		this.username = username;
+		this.email = email;
+		this.phone = phone;
+	}
+
+	/**
 	 * @return the user's account-ID number.
 	 */
 	public int getId() {

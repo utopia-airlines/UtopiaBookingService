@@ -43,6 +43,19 @@ public class SeatLocation implements Serializable {
      */
     @Column
     private String seat;
+    /**
+     * Default constructor for JPA.
+     */
+    public SeatLocation() {
+    }
+    /**
+     * Full constructor for tests.
+     */
+    public SeatLocation(final Flight flight, final int row, final String seat) {
+        this.flight = flight;
+        this.row = row;
+        this.seat = seat;
+    }
 
     /**
      * @return the flight this seat is on

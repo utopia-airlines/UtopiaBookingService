@@ -70,6 +70,21 @@ public class Flight implements Serializable {
 	private int flightNumber;
 
 	/**
+	 * Default constructor, for JPA.
+	 */
+	public Flight() {}
+
+	/**
+	 * Full constructor, for tests.
+	 */
+	public Flight(final int id, final AirportDateDTO departure, final AirportDateDTO arrival, final int flightNumber) {
+		this.id = id;
+		this.departure = departure;
+		this.arrival = arrival;
+		this.flightNumber = flightNumber;
+	}
+
+	/**
 	 * @return the internal ID number of the flight
 	 */
 	public int getId() {

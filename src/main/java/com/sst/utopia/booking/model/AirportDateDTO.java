@@ -29,7 +29,18 @@ public class AirportDateDTO implements Serializable {
 	 * The date and time that the flight is expected to depart or arrive.
 	 */
 	private LocalDateTime date;
-
+	/**
+	 * Default constructor for JPA.
+	 */
+	public AirportDateDTO() {
+	}
+	/**
+	 * Full constructor for tests.
+	 */
+	public AirportDateDTO(final Airport airport, final LocalDateTime date) {
+		this.airport = airport;
+		this.date = date;
+	}
 	/**
 	 * @return the airport that the flight is departing from or arriving at.
 	 */

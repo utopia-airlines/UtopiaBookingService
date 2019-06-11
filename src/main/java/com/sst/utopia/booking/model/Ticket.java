@@ -65,6 +65,18 @@ public class Ticket {
 	 */
 	@Column(nullable = true)
 	private String bookingId;
+	/**
+	 * Default constructor for JPA.
+	 */
+	public Ticket() {
+	}
+	/**
+	 * More complete constructor for tests.
+	 */
+	public Ticket(final SeatLocation id, final int seatClass) {
+		this.id = id;
+		this.seatClass = seatClass;
+	}
 
 	/**
 	 * @return the flight, row, and seat that together uniquely identify this
