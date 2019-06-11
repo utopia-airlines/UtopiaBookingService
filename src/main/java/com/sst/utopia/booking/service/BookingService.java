@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.util.DigestUtils;
 
 import com.sst.utopia.booking.dao.TicketDao;
 import com.sst.utopia.booking.model.SeatLocation;
@@ -20,6 +21,9 @@ import com.sst.utopia.booking.model.User;
 
 /**
  * Main business-logic class.
+ *
+ * FIXME: We need to prevent ordinary users from cancelling (and probably paying
+ * for) tickets they do not own; our booking ID is extremely guessaable!
  *
  * @author Jonathan Lovelace
  */
@@ -142,6 +146,11 @@ public final class BookingService {
 		try {
 			ticket.setReserver(user);
 			ticket.setReservationTimeout(timeout);
+			ticket.setBookingId(DigestUtils.md5DigestAsHex(new StringBuilder()
+					.append(Integer.toString(seat.getFlight().getFlightNumber()))
+					.append(' ').append(Integer.toString(seat.getRow())).append(' ')
+					.append(seat.getSeat()).append(' ')
+					.append(Integer.toString(user.getId())).toString().getBytes()));
 			ticketDao.saveAndFlush(ticket);
 		} catch (final RuntimeException exception) {
 			throw rollback(exception);
