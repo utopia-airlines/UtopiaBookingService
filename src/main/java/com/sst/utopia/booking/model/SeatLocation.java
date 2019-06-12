@@ -35,7 +35,7 @@ public class SeatLocation implements Serializable {
     /**
      * The row this seat is in.
      */
-    @Column
+    @Column(name="seatRow")
     private int row;
 
     /**
