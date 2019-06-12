@@ -1,16 +1,16 @@
 package com.sst.utopia.booking.model;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
-import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
@@ -42,24 +42,28 @@ public class Flight implements Serializable {
 	@Column
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-
 	/**
-	 * The airport and date and time of departure.
+	 * The airport from which the flight departs.
 	 */
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name = "airport", column = @Column(name = "departure")),
-			@AttributeOverride(name = "date", column = @Column(name = "departure_date")) })
-	private AirportDateDTO departure;
-
+	@ManyToOne
+	@JoinColumn(name="departure")
+	private Airport departureAirport;
 	/**
-	 * The airport and date and time of arrival.
+	 * The date and time the flight is scheduled to depart.
 	 */
-	@Embedded
-	@AttributeOverrides({
-			@AttributeOverride(name = "airport", column = @Column(name = "destination")),
-			@AttributeOverride(name = "date", column = @Column(name = "arrival_date")) })
-	private AirportDateDTO arrival;
+	@Column
+	private LocalDateTime departureDate;
+	/**
+	 * The airport to which the flight will arrive.
+	 */
+	@ManyToOne
+	@JoinColumn
+	private Airport destination;
+	/**
+	 * The date and time the flight is scheduled to arrive.
+	 */
+	@Column
+	private LocalDateTime arrivalDate;
 
 	/**
 	 * The flight number that users will see. This is intended to be a hash derived
@@ -72,15 +76,20 @@ public class Flight implements Serializable {
 	/**
 	 * Default constructor, for JPA.
 	 */
-	public Flight() {}
+	public Flight() {
+	}
 
 	/**
 	 * Full constructor, for tests.
 	 */
-	public Flight(final int id, final AirportDateDTO departure, final AirportDateDTO arrival, final int flightNumber) {
+	public Flight(final int id, final Airport departureAirport,
+			final LocalDateTime departureDate, final Airport destination,
+			final LocalDateTime arrivalDate, final int flightNumber) {
 		this.id = id;
-		this.departure = departure;
-		this.arrival = arrival;
+		this.departureAirport = departureAirport;
+		this.departureDate = departureDate;
+		this.destination = destination;
+		this.arrivalDate = arrivalDate;
 		this.flightNumber = flightNumber;
 	}
 
@@ -92,17 +101,31 @@ public class Flight implements Serializable {
 	}
 
 	/**
-	 * @return the location and planned date and time of departure
+	 * @return the airport from which the flight will depart
 	 */
-	public AirportDateDTO getDeparture() {
-		return departure;
+	public Airport getDepartureAirport() {
+		return departureAirport;
 	}
 
 	/**
-	 * @return the location and planned date and time of arrival
+	 * @return when the flight is planned to depart
 	 */
-	public AirportDateDTO getArrival() {
-		return arrival;
+	public LocalDateTime getDepartureDate() {
+		return departureDate;
+	}
+
+	/**
+	 * @return the airport at which the flight will arrive
+	 */
+	public Airport getDestination() {
+		return destination;
+	}
+
+	/**
+	 * @return when the flight is planned to arrive
+	 */
+	public LocalDateTime getArrivalDate() {
+		return arrivalDate;
 	}
 
 	/**
@@ -130,8 +153,10 @@ public class Flight implements Serializable {
 			return true;
 		} else if (obj instanceof Flight) {
 			return id == ((Flight) obj).getId()
-					&& Objects.equals(departure, ((Flight) obj).getDeparture())
-					&& Objects.equals(arrival, ((Flight) obj).getArrival());
+					&& Objects.equals(departureAirport, ((Flight) obj).getDepartureAirport())
+					&& Objects.equals(departureDate, ((Flight) obj).getDepartureDate())
+					&& Objects.equals(destination, ((Flight) obj).getDestination())
+					&& Objects.equals(arrivalDate, ((Flight) obj).getArrivalDate());
 		} else {
 			return false;
 		}
@@ -139,7 +164,12 @@ public class Flight implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("Flight %d (internal #%d) from %s to %s", flightNumber,
-				id, departure.toString(), arrival.toString());
+		return String.format(
+				"Flight %d (internal #%d) from %s (%s) at %s %s to %s (%s) at %s %s",
+				flightNumber, id, departureAirport.getCode(),
+				departureAirport.getName(), departureDate.toLocalDate().toString(),
+				departureDate.toLocalTime().toString(), destination.getCode(),
+				destination.getName(), arrivalDate.toLocalDate().toString(),
+				arrivalDate.toLocalTime().toString());
 	}
 }
