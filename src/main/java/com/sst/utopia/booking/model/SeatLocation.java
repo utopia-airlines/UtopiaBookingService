@@ -29,7 +29,7 @@ public class SeatLocation implements Serializable {
      * The flight this seat is on.
      */
     @ManyToOne
-    @JoinColumn
+    @JoinColumn(name="flight")
     private Flight flight;
 
     /**

@@ -43,7 +43,7 @@ public class Ticket {
 	 * The holder of this ticket, if any.
 	 */
 	@ManyToOne
-	@JoinColumn(nullable = true)
+	@JoinColumn(nullable = true, name="reserver")
 	private User reserver;
 	/**
 	 * The price that the ticket-holder paid to book this seat; must be null if
