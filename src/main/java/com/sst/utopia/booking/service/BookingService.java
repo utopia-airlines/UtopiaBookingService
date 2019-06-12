@@ -156,10 +156,11 @@ public final class BookingService {
 	 * @return the booking details
 	 * @throws IllegalArgumentException if the seat is already booked (TODO: use a
 	 *                                  custom exception)
+	 * @throws NoSuchElementException if that seat is not present in the database
 	 */
 	public Ticket bookTicket(final SeatLocation seat, final User user,
 			final LocalDateTime timeout) {
-		final Ticket ticket = ticketDao.getOne(seat);
+		final Ticket ticket = ticketDao.findById(seat).get();
 		if (ticket.getReserver() != null) {
 			throw new IllegalArgumentException("Ticket already reserved");
 		}
@@ -191,7 +192,7 @@ public final class BookingService {
 	 *                                  paid for
 	 */
 	public Ticket acceptPayment(final Ticket ticket, final int price) {
-		final Ticket booking = ticketDao.getOne(ticket.getId());
+		final Ticket booking = ticketDao.findById(ticket.getId()).get();
 		if (booking.getReserver() == null) {
 			throw new IllegalArgumentException("Ticket is not booked");
 		} else if (booking.getPrice() != null) {
@@ -235,9 +236,10 @@ public final class BookingService {
 	 *
 	 * @param ticket the booking in question (only the ID fields are used)
 	 * @throws IllegalArgumentException if the ticket has been paid for
+	 * @throws NoSuchElementException if no such ticket is in the database
 	 */
 	public void cancelPendingReservation(final Ticket ticket) {
-		final Ticket booking = ticketDao.getOne(ticket.getId());
+		final Ticket booking = ticketDao.findById(ticket.getId()).get();
 		if (booking.getReserver() == null) {
 			return;
 		} else if (booking.getPrice() != null) {
