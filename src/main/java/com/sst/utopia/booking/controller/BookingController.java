@@ -81,4 +81,30 @@ public class BookingController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	/**
+	 * Accept payment for a given reserved seat.
+	 * @param bookingId the ID code of the booking
+	 * @param payment the price the customer has paid for the ticket
+	 */
+	@PutMapping("/pay/{bookingId}")
+	public ResponseEntity<Ticket> acceptPaymentForBookingId(
+			@PathVariable final String bookingId,
+			@RequestBody final PaymentAmount payment) {
+		try {
+			return new ResponseEntity<>(
+					service.acceptPayment(bookingId, payment.getPrice()),
+					HttpStatus.OK);
+		} catch (final IllegalArgumentException except) {
+			return new ResponseEntity<>(HttpStatus.GONE);
+		} catch (final IllegalStateException except) {
+			if (except.getMessage().contains("Uniqueness")) {
+				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			} else {
+				return new ResponseEntity<>(HttpStatus.CONFLICT);
+			}
+		} catch (final Exception except) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }
