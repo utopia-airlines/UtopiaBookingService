@@ -116,14 +116,16 @@ public class BookingService {
 	}
 
 	/**
-	 * Mark the given ticket as having been paid for at the specified price. TODO:
-	 * Should we only allow the ticket-holder to pay for it?
+	 * Mark the given ticket as having been paid for at the specified price. If the
+	 * ticket has already been paid for at that price, this is a no-op. TODO: Should
+	 * we only allow the ticket-holder to pay for it?
 	 *
 	 * @param ticket the ticket in question
 	 * @param price  the price the ticket-holder paid
 	 * @return the updated booking information
-	 * @throws IllegalArgumentException if ticket is not booked or has already been
-	 *                                  paid for TODO: split these conditions
+	 * @throws IllegalArgumentException if ticket is not booked
+	 * @throws IllegalStateException    if ticket has already been paid for at a
+	 *                                  different price.
 	 */
 	@Transactional
 	public Ticket acceptPayment(final Ticket ticket, final int price) {
@@ -131,7 +133,11 @@ public class BookingService {
 		if (booking.getReserver() == null) {
 			throw new IllegalArgumentException("Ticket is not booked");
 		} else if (booking.getPrice() != null) {
-			throw new IllegalArgumentException("Ticket has already been paid for");
+			if (booking.getPrice().equals(price)) {
+				return booking;
+			} else {
+				throw new IllegalStateException("Ticket has already been paid for");
+			}
 		}
 		booking.setPrice(price);
 		ticketDao.saveAndFlush(booking);
@@ -141,10 +147,14 @@ public class BookingService {
 	/**
 	 * Mark the ticket with the given booking ID as having been paid for at the
 	 * specified price.
+	 *
 	 * @param bookingId the booking-ID for the ticket in question.
-	 * @param price the price the ticket-holder paid
+	 * @param price     the price the ticket-holder paid
 	 * @return the updated booking information
-	 * @throws IllegalArgumentException if that booking ID does not refer to a booked ticket or if the ticket has already been paid for
+	 * @throws IllegalArgumentException if that booking ID does not refer to a
+	 *                                  booked ticket
+	 * @throws IllegalStateException    if ticket has already been paid for at a
+	 *                                  different price.
 	 */
 	public Ticket acceptPayment(final String bookingId, final int price) {
 		final List<Ticket> matchingTickets = ticketDao.findByBookingId(bookingId);

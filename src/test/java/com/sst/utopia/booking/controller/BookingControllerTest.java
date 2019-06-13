@@ -103,6 +103,9 @@ class BookingControllerTest {
 				.andExpect(status().isOk());
 		mvc.perform(put("/booking/pay/152/1/A")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"))
-				.andExpect(status().isGone());
+				.andExpect(status().isOk()); // testing idempotency
+		mvc.perform(put("/booking/pay/152/1/A")
+				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":400}"))
+				.andExpect(status().isConflict());
 	}
 }

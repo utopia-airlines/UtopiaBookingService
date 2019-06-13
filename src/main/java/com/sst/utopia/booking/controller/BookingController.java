@@ -71,6 +71,8 @@ public class BookingController {
 							new SeatLocation(service.getFlight(flight), row, seat)),
 					payment.getPrice());
 			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (final IllegalStateException except) {
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
 		} catch (final IllegalArgumentException except) {
 			return new ResponseEntity<>(HttpStatus.GONE);
 		} catch (final NoSuchElementException except) {
