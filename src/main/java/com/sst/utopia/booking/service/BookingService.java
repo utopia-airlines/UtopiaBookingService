@@ -2,16 +2,11 @@ package com.sst.utopia.booking.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionException;
-import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
 import com.sst.utopia.booking.dao.FlightDao;
@@ -30,7 +25,7 @@ import com.sst.utopia.booking.model.User;
  * @author Jonathan Lovelace
  */
 @Service
-public final class BookingService {
+public class BookingService {
 	/**
 	 * DAO to access ticket table.
 	 */
@@ -49,72 +44,6 @@ public final class BookingService {
 	@Value("${utopia.expiration.minutes}")
 	private int defaultBookingExpiration;
 
-	/**
-	 * Logger for handling errors in the DAO layer.
-	 */
-	private static final Logger LOGGER = Logger
-			.getLogger(BookingService.class.getName());
-
-	/**
-	 * The currently-active transaction, or null if not in a transaction.
-	 */
-	private volatile TransactionStatus transaction;
-	/**
-	 * The transaction manager provided by Spring.
-	 */
-	@Autowired
-	private PlatformTransactionManager transactionManager;
-
-	/**
-	 * Begin a SQL transaction.
-	 *
-	 * @throws TransactionException on error in the ORM or transaction manager.
-	 */
-	private void beginTransaction() throws TransactionException {
-		if (transaction == null) {
-			synchronized (this) {
-				if (transaction == null) {
-					transaction = transactionManager.getTransaction(null);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Commit the current transaction, if any.
-	 */
-	private void commit() {
-		synchronized (this) {
-			if (transaction != null) {
-				transactionManager.commit(transaction);
-				transaction = null;
-			}
-		}
-	}
-
-	/**
-	 * Roll back the current transaction.
-	 *
-	 * @param <E>     the type of the exception that caused the rollback.
-	 * @param pending the exception that caused us to roll the transaction back
-	 * @return that exception, with a 'rollback failed' exception added as
-	 *         suppressed if the rollback failed.
-	 */
-	private <E extends Exception> E rollback(final E pending) {
-		try {
-			if (transaction != null) {
-				transactionManager.rollback(transaction);
-			}
-		} catch (final DataAccessException except) {
-			LOGGER.log(Level.SEVERE, "Further error while rolling back transaction",
-					except);
-			pending.addSuppressed(except);
-		}
-		synchronized (this) {
-			transaction = null;
-		}
-		return pending;
-	}
 	/**
 	 * Get a specified
 	 * @param flightNumber the flight-number of a flight
@@ -158,26 +87,21 @@ public final class BookingService {
 	 *                                  custom exception)
 	 * @throws NoSuchElementException if that seat is not present in the database
 	 */
+	@Transactional
 	public Ticket bookTicket(final SeatLocation seat, final User user,
 			final LocalDateTime timeout) {
 		final Ticket ticket = ticketDao.findById(seat).get();
 		if (ticket.getReserver() != null) {
 			throw new IllegalArgumentException("Ticket already reserved");
 		}
-		beginTransaction();
-		try {
-			ticket.setReserver(user);
-			ticket.setReservationTimeout(timeout);
-			ticket.setBookingId(DigestUtils.md5DigestAsHex(new StringBuilder()
-					.append(Integer.toString(seat.getFlight().getFlightNumber()))
-					.append(' ').append(Integer.toString(seat.getRow())).append(' ')
-					.append(seat.getSeat()).append(' ')
-					.append(Integer.toString(user.getId())).toString().getBytes()));
-			ticketDao.saveAndFlush(ticket);
-		} catch (final RuntimeException exception) {
-			throw rollback(exception);
-		}
-		commit();
+		ticket.setReserver(user);
+		ticket.setReservationTimeout(timeout);
+		ticket.setBookingId(DigestUtils.md5DigestAsHex(new StringBuilder()
+				.append(Integer.toString(seat.getFlight().getFlightNumber()))
+				.append(' ').append(Integer.toString(seat.getRow())).append(' ')
+				.append(seat.getSeat()).append(' ')
+				.append(Integer.toString(user.getId())).toString().getBytes()));
+		ticketDao.saveAndFlush(ticket);
 		return ticket;
 	}
 
@@ -191,6 +115,7 @@ public final class BookingService {
 	 * @throws IllegalArgumentException if ticket is not booked or has already been
 	 *                                  paid for
 	 */
+	@Transactional
 	public Ticket acceptPayment(final Ticket ticket, final int price) {
 		final Ticket booking = ticketDao.findById(ticket.getId()).get();
 		if (booking.getReserver() == null) {
@@ -198,14 +123,8 @@ public final class BookingService {
 		} else if (booking.getPrice() != null) {
 			throw new IllegalArgumentException("Ticket has already been paid for");
 		}
-		beginTransaction();
-		try {
-			booking.setPrice(price);
-			ticketDao.saveAndFlush(booking);
-		} catch (final RuntimeException exception) {
-			throw rollback(exception);
-		}
-		commit();
+		booking.setPrice(price);
+		ticketDao.saveAndFlush(booking);
 		return booking;
 	}
 
@@ -238,6 +157,7 @@ public final class BookingService {
 	 * @throws IllegalArgumentException if the ticket has been paid for
 	 * @throws NoSuchElementException if no such ticket is in the database
 	 */
+	@Transactional
 	public void cancelPendingReservation(final Ticket ticket) {
 		final Ticket booking = ticketDao.findById(ticket.getId()).get();
 		if (booking.getReserver() == null) {
@@ -245,14 +165,8 @@ public final class BookingService {
 		} else if (booking.getPrice() != null) {
 			throw new IllegalArgumentException("Ticket has been paid for");
 		}
-		beginTransaction();
-		try {
-			booking.setReserver(null);
-			ticketDao.saveAndFlush(booking);
-		} catch (final RuntimeException exception) {
-			throw rollback(exception);
-		}
-		commit();
+		booking.setReserver(null);
+		ticketDao.saveAndFlush(booking);
 	}
 
 	/**
