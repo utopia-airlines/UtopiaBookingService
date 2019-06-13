@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -103,6 +104,48 @@ public class BookingController {
 			} else {
 				return new ResponseEntity<>(HttpStatus.CONFLICT);
 			}
+		} catch (final Exception except) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	/**
+	 * Cancel unpaid reservation for a given seat. TODO: Only the ticket-holder
+	 * should be able to cancel it
+	 *
+	 * @param flight the flight number of the flight
+	 * @param row    the row number of the seat
+	 * @param seat   the seat within the row
+	 */
+	@DeleteMapping("/book/{flight}/{row}/{seat}")
+	public ResponseEntity<Object> cancelReservation(@PathVariable final int flight,
+			@PathVariable final int row, @PathVariable final String seat) {
+		try {
+			service.cancelPendingReservation(service.getTicket(
+					new SeatLocation(service.getFlight(flight), row, seat)));
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		} catch (final NoSuchElementException except) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} catch (final IllegalArgumentException except) {
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
+		} catch (final Exception except) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * Cancel unpaid reservation for a given booking-ID. TODO: only the ticket
+	 * holder should be able to cancel it
+	 *
+	 * @param bookingId the booking-ID for the seat
+	 */
+	@DeleteMapping("/book/{bookingId}")
+	public ResponseEntity<Object> cancelBookingById(
+			@PathVariable final String bookingId) {
+		try {
+			service.cancelPendingReservation(bookingId);
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		} catch (final IllegalArgumentException except) {
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
 		} catch (final Exception except) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
