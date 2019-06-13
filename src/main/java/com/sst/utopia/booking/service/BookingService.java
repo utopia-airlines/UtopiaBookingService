@@ -45,7 +45,7 @@ public class BookingService {
 	private int defaultBookingExpiration;
 
 	/**
-	 * Get a specified
+	 * Get a specified flight by its flight number.
 	 * @param flightNumber the flight-number of a flight
 	 * @return the flight with that number, or null if there
 	 */
@@ -56,6 +56,16 @@ public class BookingService {
 		} else {
 			return list.get(0);
 		}
+	}
+
+	/**
+	 * Get a specified ticket by its flight and seat location.
+	 * @param seat the flight and seat location desired
+	 * @return the ticket, booked or not, for that seat
+	 * @throws NoSuchElementException if no such seat in the database
+	 */
+	public Ticket getTicket(final SeatLocation seat) {
+		return ticketDao.findById(seat).get();
 	}
 
 	/**
@@ -113,7 +123,7 @@ public class BookingService {
 	 * @param price  the price the ticket-holder paid
 	 * @return the updated booking information
 	 * @throws IllegalArgumentException if ticket is not booked or has already been
-	 *                                  paid for
+	 *                                  paid for TODO: split these conditions
 	 */
 	@Transactional
 	public Ticket acceptPayment(final Ticket ticket, final int price) {

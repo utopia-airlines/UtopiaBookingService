@@ -1,6 +1,7 @@
 package com.sst.utopia.booking.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
@@ -88,5 +89,20 @@ class BookingControllerTest {
 		mvc.perform(post("/booking/book/152/1/A/")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"id\": 2}"))
 				.andExpect(status().isConflict());
+	}
+
+	@Test
+	public void testAcceptPayment() throws Exception {
+		mvc.perform(put("/booking/pay/152/1/A")
+				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"))
+				.andExpect(status().isGone());
+		mvc.perform(post("/booking/book/152/1/A/")
+				.contentType(MediaType.APPLICATION_JSON).content("{\"id\":1}"));
+		mvc.perform(put("/booking/pay/152/1/A")
+				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"))
+				.andExpect(status().isOk());
+		mvc.perform(put("/booking/pay/152/1/A")
+				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"))
+				.andExpect(status().isGone());
 	}
 }
