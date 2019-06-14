@@ -106,11 +106,11 @@ public class BookingService {
 		}
 		ticket.setReserver(user);
 		ticket.setReservationTimeout(timeout);
-		ticket.setBookingId(DigestUtils.md5DigestAsHex(new StringBuilder()
-				.append(Integer.toString(seat.getFlight().getFlightNumber()))
-				.append(' ').append(Integer.toString(seat.getRow())).append(' ')
-				.append(seat.getSeat()).append(' ')
-				.append(Integer.toString(user.getId())).toString().getBytes()));
+		ticket.setBookingId(
+				DigestUtils.md5DigestAsHex(String
+						.format("%d %d %s %d", seat.getFlight().getFlightNumber(),
+								seat.getRow(), seat.getSeat(), user.getId())
+						.getBytes()));
 		ticketDao.saveAndFlush(ticket);
 		return ticket;
 	}
