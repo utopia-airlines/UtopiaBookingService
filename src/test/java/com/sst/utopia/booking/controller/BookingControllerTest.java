@@ -89,28 +89,28 @@ class BookingControllerTest {
 
 	@Test
 	public void testBookTicket() throws Exception {
-		mvc.perform(post("/booking/book/152/1/A/")
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"id\": 1}"))
 				.andExpect(status().isCreated());
-		mvc.perform(post("/booking/book/152/1/A/")
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"id\": 2}"))
 				.andExpect(status().isConflict());
 	}
 
 	@Test
 	public void testAcceptPayment() throws Exception {
-		mvc.perform(put("/booking/pay/152/1/A")
+		mvc.perform(put("/booking/pay/flights/152/rows/1/seats/A")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"))
 				.andExpect(status().isGone());
-		mvc.perform(post("/booking/book/152/1/A/")
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"id\":1}"));
-		mvc.perform(put("/booking/pay/152/1/A")
+		mvc.perform(put("/booking/pay/flights/152/rows/1/seats/A")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"))
 				.andExpect(status().isOk());
-		mvc.perform(put("/booking/pay/152/1/A")
+		mvc.perform(put("/booking/pay/flights/152/rows/1/seats/A")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"))
 				.andExpect(status().isOk()); // testing idempotency
-		mvc.perform(put("/booking/pay/152/1/A")
+		mvc.perform(put("/booking/pay/flights/152/rows/1/seats/A")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":400}"))
 				.andExpect(status().isConflict());
 	}
@@ -118,19 +118,19 @@ class BookingControllerTest {
 	@Test
 	public void testAcceptPaymentByBookingId() throws Exception {
 		final String bookingId = DigestUtils.md5DigestAsHex("152 1 A 1".getBytes());
-		mvc.perform(put("/booking/pay/" + bookingId)
+		mvc.perform(put("/booking/pay/bookings/" + bookingId)
 				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"))
 				.andExpect(status().isGone());
-		mvc.perform(post("/booking/book/152/1/A/")
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"id\":1}"))
 				.andExpect(jsonPath("$.bookingId", is(bookingId)));
-		mvc.perform(put("/booking/pay/" + bookingId)
+		mvc.perform(put("/booking/pay/bookings/" + bookingId)
 				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"))
 				.andExpect(status().isOk());
-		mvc.perform(put("/booking/pay/" + bookingId)
+		mvc.perform(put("/booking/pay/bookings/" + bookingId)
 				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"))
 				.andExpect(status().isOk()); // testing idempotency
-		mvc.perform(put("/booking/pay/" + bookingId)
+		mvc.perform(put("/booking/pay/bookings/" + bookingId)
 				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":400}"))
 				.andExpect(status().isConflict());
 	}
@@ -138,36 +138,36 @@ class BookingControllerTest {
 	@Test
 	public void testCancelReservation() throws Exception {
 		final SeatLocation seat = new SeatLocation(flightDao.findByFlightNumber(152).get(0), 1, "A");
-		mvc.perform(delete("/booking/book/152/1/A")).andExpect(status().isNoContent());
-		mvc.perform(post("/booking/book/152/1/A/")
+		mvc.perform(delete("/booking/book/flights/152/rows/1/seats/A")).andExpect(status().isNoContent());
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"id\": 1}"));
 		assertTrue(ticketDao.findById(seat).map(Ticket::getReserver).isPresent());
-		mvc.perform(delete("/booking/book/152/1/A")).andExpect(status().isNoContent());
+		mvc.perform(delete("/booking/book/flights/152/rows/1/seats/A")).andExpect(status().isNoContent());
 		assertFalse(ticketDao.findById(seat).map(Ticket::getReserver).isPresent());
-		mvc.perform(delete("/booking/book/235/4/D")).andExpect(status().isNotFound());
-		mvc.perform(post("/booking/book/152/1/A/")
+		mvc.perform(delete("/booking/book/flights/235/rows/4/seats/D")).andExpect(status().isNotFound());
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"id\": 1}"));
-		mvc.perform(put("/booking/pay/152/1/A")
+		mvc.perform(put("/booking/pay/flights/152/rows/1/seats/A")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"));
-		mvc.perform(delete("/booking/book/152/1/A")).andExpect(status().isConflict());
+		mvc.perform(delete("/booking/book/flights/152/rows/1/seats/A")).andExpect(status().isConflict());
 	}
 
 	@Test
 	public void testCancelByBookingId() throws Exception {
 		final String bookingId = DigestUtils.md5DigestAsHex("152 1 A 1".getBytes());
-		mvc.perform(delete("/booking/book/" + bookingId))
+		mvc.perform(delete("/booking/book/bookings/" + bookingId))
 				.andExpect(status().isNoContent());
-		mvc.perform(post("/booking/book/152/1/A/")
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"id\": 1}"));
 		assertFalse(ticketDao.findByBookingId(bookingId).isEmpty());
-		mvc.perform(delete("/booking/book/" + bookingId))
+		mvc.perform(delete("/booking/book/bookings/" + bookingId))
 				.andExpect(status().isNoContent());
 		assertTrue(ticketDao.findByBookingId(bookingId).isEmpty());
-		mvc.perform(post("/booking/book/152/1/A/")
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
 				.contentType(MediaType.APPLICATION_JSON).content("{\"id\": 1}"));
-		mvc.perform(put("/booking/pay/" + bookingId)
+		mvc.perform(put("/booking/pay/bookings/" + bookingId)
 				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"));
-		mvc.perform(delete("/booking/book/" + bookingId))
+		mvc.perform(delete("/booking/book/bookings/" + bookingId))
 				.andExpect(status().isConflict());
 	}
 }

@@ -41,7 +41,7 @@ public class BookingController {
 	 * @param seat the seat within the row
 	 * @param user the user details
 	 */
-	@PostMapping("/book/{flight}/{row}/{seat}")
+	@PostMapping("/book/flights/{flight}/rows/{row}/seats/{seat}")
 	public ResponseEntity<Ticket> bookTicket(@PathVariable final int flight,
 			@PathVariable final int row, @PathVariable final String seat,
 			@RequestBody final User user) {
@@ -62,7 +62,7 @@ public class BookingController {
 	 * @param seat the seat within the row
 	 * @param payment the price the customer has paid for the ticket
 	 */
-	@PutMapping("/pay/{flight}/{row}/{seat}")
+	@PutMapping("/pay/flights/{flight}/rows/{row}/seats/{seat}")
 	public ResponseEntity<Ticket> acceptPayment(@PathVariable final int flight,
 			@PathVariable final int row, @PathVariable final String seat,
 			@RequestBody final PaymentAmount payment) {
@@ -88,7 +88,7 @@ public class BookingController {
 	 * @param bookingId the ID code of the booking
 	 * @param payment the price the customer has paid for the ticket
 	 */
-	@PutMapping("/pay/{bookingId}")
+	@PutMapping("/pay/bookings/{bookingId}")
 	public ResponseEntity<Ticket> acceptPaymentForBookingId(
 			@PathVariable final String bookingId,
 			@RequestBody final PaymentAmount payment) {
@@ -116,7 +116,7 @@ public class BookingController {
 	 * @param row    the row number of the seat
 	 * @param seat   the seat within the row
 	 */
-	@DeleteMapping("/book/{flight}/{row}/{seat}")
+	@DeleteMapping("/book/flights/{flight}/rows/{row}/seats/{seat}")
 	public ResponseEntity<Object> cancelReservation(@PathVariable final int flight,
 			@PathVariable final int row, @PathVariable final String seat) {
 		try {
@@ -138,7 +138,7 @@ public class BookingController {
 	 *
 	 * @param bookingId the booking-ID for the seat
 	 */
-	@DeleteMapping("/book/{bookingId}")
+	@DeleteMapping("/book/bookings/{bookingId}")
 	public ResponseEntity<Object> cancelBookingById(
 			@PathVariable final String bookingId) {
 		try {
