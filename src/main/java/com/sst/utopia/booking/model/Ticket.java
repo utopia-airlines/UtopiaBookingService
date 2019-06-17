@@ -9,6 +9,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
+
 /**
  * A ticket, or seat (for which a ticket may be or may have been sold), on a
  * flight.
@@ -44,6 +48,7 @@ public class Ticket {
 	 */
 	@ManyToOne
 	@JoinColumn(nullable = true, name="reserver")
+	@JsonProperty(access = Access.WRITE_ONLY)
 	private User reserver;
 	/**
 	 * The price that the ticket-holder paid to book this seat; must be null if
@@ -203,5 +208,12 @@ public class Ticket {
 		} else {
 			return reservationTimeout == null;
 		}
+	}
+	/**
+	 * @return whether the ticket has been booked
+	 */
+	@JsonGetter(value = "reserved")
+	public boolean isReserved() {
+		return reserver != null;
 	}
 }
