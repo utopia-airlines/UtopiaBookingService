@@ -205,9 +205,9 @@ public class BookingController {
 	/**
 	 * Get the details of a ticket.
 	 *
-	 * @param flight the flight number of the flight
+	 * @param flightId the flight number of the flight
 	 * @param row    the row number of the seat
-	 * @param seat   the seat within the row
+	 * @param seatId   the seat within the row
 	 */
 	@GetMapping("/details/flights/{flightId}/rows/{row}/seats/{seatId}")
 	public ResponseEntity<Ticket> getBookingDetails(@PathVariable final int flightId,
