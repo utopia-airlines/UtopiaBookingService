@@ -195,6 +195,7 @@ public class BookingService {
 	 * @param bookingId the booking ID of the booking in question
 	 * @throws IllegalArgumentException if the ticket has been paid for
 	 */
+	@Transactional
 	public void cancelPendingReservation(final String bookingId) {
 		final List<Ticket> matchingTickets = ticketDao.findByBookingId(bookingId);
 		if (!matchingTickets.isEmpty()) {
@@ -202,6 +203,59 @@ public class BookingService {
 				throw new IllegalStateException("Uniqueness constraint violated");
 			} else {
 				cancelPendingReservation(matchingTickets.get(0));
+			}
+		}
+	}
+
+	/**
+	 * Extend the reservation timeout for a reservation that has been made but not
+	 * paid for. TODO: keep track of how much the timeout has been extended, and
+	 * limit it to a maximum value.
+	 *
+	 * @param ticket the booking in question (only the ID fields are used)
+	 * @throws IllegalArgumentException if ticket is not booked
+	 * @throws IllegalStateException    if ticket has already been paid for at a
+	 * @throws NoSuchElementException if no such ticket is in the database
+	 */
+	@Transactional
+	public void extendReservationTimeout(final Ticket ticket) {
+		final Ticket booking = ticketDao.findById(ticket.getId()).get();
+		if (booking.getReserver() == null) {
+			throw new IllegalArgumentException("Ticket not booked");
+		} else if (booking.getPrice() != null) {
+			throw new IllegalStateException("Ticket has already been paid for");
+		} else {
+			booking.setReservationTimeout(
+					LocalDateTime.now().plusMinutes(defaultBookingExpiration));
+			ticketDao.save(booking);
+		}
+	}
+	/**
+	 * Extend the reservation timeout for a reservation that has been made but not
+	 * paid for. TODO: keep track of how much the timeout has been extended, and
+	 * limit it to a maximum value.
+	 *
+	 * @param bookingId the booking-ID for the ticket in question.
+	 * @throws IllegalArgumentException if that booking ID does not refer to a
+	 *                                  booked ticket
+	 * @throws IllegalStateException    if ticket has already been paid for, or the
+	 *                                  uniqueness constraint is violated
+	 */
+	@Transactional
+	public void extendReservationTimeout(final String bookingId) {
+		final List<Ticket> matchingTickets = ticketDao.findByBookingId(bookingId);
+		if (matchingTickets.isEmpty()) {
+			throw new IllegalArgumentException("No such ticket");
+		} else if (matchingTickets.size() > 1) {
+			throw new IllegalStateException("Uniqueness constraint violated");
+		} else {
+			final Ticket booking = matchingTickets.get(0);
+			if (booking.getPrice() != null) {
+				throw new IllegalStateException("Ticket has already been paid for");
+			} else {
+				booking.setReservationTimeout(
+						LocalDateTime.now().plusMinutes(defaultBookingExpiration));
+				ticketDao.save(booking);
 			}
 		}
 	}

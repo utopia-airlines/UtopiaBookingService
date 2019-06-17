@@ -150,4 +150,54 @@ public class BookingController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	/**
+	 * Extend the reservation timeout for the given unpaid booking. TODO: limit the
+	 * number of times this is allowed
+	 *
+	 * @param flight the flight number of the flight
+	 * @param row    the row number of the seat
+	 * @param seat   the seat within the row
+	 */
+	@PutMapping("/extend/flights/{flight}/rows/{row}/seats/{seat}")
+	public ResponseEntity<Object> extendTimeout(@PathVariable final int flight,
+			@PathVariable final int row, @PathVariable final String seat) {
+		try {
+			service.extendReservationTimeout(service.getTicket(
+					new SeatLocation(service.getFlight(flight), row, seat)));
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		} catch (final NoSuchElementException except) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} catch (final IllegalArgumentException except) {
+			return new ResponseEntity<>(HttpStatus.GONE);
+		} catch (final IllegalStateException except) {
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
+		} catch (final Exception except) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * Extend the reservation timeout for the given unpaid booking. TODO: limit the
+	 * number of times this is allowed
+	 *
+	 * @param bookingId the booking-ID for the seat
+	 */
+	@PutMapping("/extend/bookings/{bookingId}")
+	public ResponseEntity<Object> extendTimeout(@PathVariable final String bookingId) {
+		try {
+			service.extendReservationTimeout(bookingId);
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		} catch (final IllegalArgumentException except) {
+			return new ResponseEntity<>(HttpStatus.GONE);
+		} catch (final IllegalStateException except) {
+			if (except.getMessage().contains("Uniqueness")) {
+				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			} else {
+				return new ResponseEntity<>(HttpStatus.CONFLICT);
+			}
+		} catch (final Exception except) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }

@@ -170,4 +170,43 @@ class BookingControllerTest {
 		mvc.perform(delete("/booking/book/bookings/" + bookingId))
 				.andExpect(status().isConflict());
 	}
+
+	@Test
+	public void testExtendTimeout() throws Exception {
+		mvc.perform(put("/booking/extend/flights/152/rows/1/seats/A"))
+				.andExpect(status().isGone());
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
+				.contentType(MediaType.APPLICATION_JSON).content("{\"id\":1}"));
+		mvc.perform(put("/booking/extend/flights/152/rows/1/seats/A"))
+				.andExpect(status().isNoContent());
+		mvc.perform(delete("/booking/book/flights/152/rows/1/seats/A"));
+		mvc.perform(put("/booking/extend/flights/152/rows/1/seats/A"))
+				.andExpect(status().isGone());
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
+				.contentType(MediaType.APPLICATION_JSON).content("{\"id\":1}"));
+		mvc.perform(put("/booking/pay/flights/152/rows/1/seats/A")
+				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"));
+		mvc.perform(put("/booking/extend/flights/152/rows/1/seats/A"))
+				.andExpect(status().isConflict());
+	}
+
+	@Test
+	public void testExtendTimeoutByBookingId() throws Exception {
+		final String bookingId = DigestUtils.md5DigestAsHex("152 1 A 1".getBytes());
+		mvc.perform(put("/booking/extend/bookings/" + bookingId))
+				.andExpect(status().isGone());
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
+				.contentType(MediaType.APPLICATION_JSON).content("{\"id\":1}"));
+		mvc.perform(put("/booking/extend/bookings/" + bookingId))
+				.andExpect(status().isNoContent());
+		mvc.perform(delete("/booking/book/flights/152/rows/1/seats/A"));
+		mvc.perform(put("/booking/extend/bookings/" + bookingId))
+				.andExpect(status().isGone());
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
+				.contentType(MediaType.APPLICATION_JSON).content("{\"id\":1}"));
+		mvc.perform(put("/booking/pay/bookings/" + bookingId)
+				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"));
+		mvc.perform(put("/booking/extend/bookings/" + bookingId))
+				.andExpect(status().isConflict());
+	}
 }
