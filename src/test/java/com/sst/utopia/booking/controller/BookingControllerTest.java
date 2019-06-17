@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -208,5 +209,19 @@ class BookingControllerTest {
 				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"));
 		mvc.perform(put("/booking/extend/bookings/" + bookingId))
 				.andExpect(status().isConflict());
+	}
+
+	@Test
+	public void testGetBookingDetails() throws Exception {
+		mvc.perform(get("/booking/details/flights/154/rows/1/seats/A"))
+				.andExpect(status().isNotFound());
+		mvc.perform(get("/booking/details/flights/152/rows/1/seats/A"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.reserved", is(false)));
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
+				.contentType(MediaType.APPLICATION_JSON).content("{\"id\":1}"));
+		mvc.perform(get("/booking/details/flights/152/rows/1/seats/A"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.reserved", is(true)));
 	}
 }

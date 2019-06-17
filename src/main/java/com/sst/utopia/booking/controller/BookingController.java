@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -196,6 +197,27 @@ public class BookingController {
 			} else {
 				return new ResponseEntity<>(HttpStatus.CONFLICT);
 			}
+		} catch (final Exception except) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * Get the details of a ticket.
+	 *
+	 * @param flight the flight number of the flight
+	 * @param row    the row number of the seat
+	 * @param seat   the seat within the row
+	 */
+	@GetMapping("/details/flights/{flightId}/rows/{row}/seats/{seatId}")
+	public ResponseEntity<Ticket> getBookingDetails(@PathVariable final int flightId,
+			@PathVariable final int row, @PathVariable final String seatId) {
+		try {
+			return new ResponseEntity<>(service.getTicket(
+					new SeatLocation(service.getFlight(flightId), row, seatId)),
+					HttpStatus.OK);
+		} catch (final NoSuchElementException except) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		} catch (final Exception except) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
