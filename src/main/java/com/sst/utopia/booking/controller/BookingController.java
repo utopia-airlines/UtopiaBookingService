@@ -222,4 +222,23 @@ public class BookingController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	/**
+	 * Get the details of a ticket by its booking ID.
+	 * @param bookingId the booking ID for the ticket.
+	 */
+	@GetMapping("/details/bookings/{bookingId}")
+	public ResponseEntity<Ticket> getBookingDetailsById(
+			@PathVariable final String bookingId) {
+		try {
+			final Ticket ticket = service.getBooking(bookingId);
+			if (ticket == null) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			} else {
+				return new ResponseEntity<>(ticket, HttpStatus.OK);
+			}
+		} catch (final Exception exception) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 }

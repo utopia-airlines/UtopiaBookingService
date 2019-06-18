@@ -1,6 +1,7 @@
 package com.sst.utopia.booking.controller;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -223,5 +224,25 @@ class BookingControllerTest {
 		mvc.perform(get("/booking/details/flights/152/rows/1/seats/A"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.reserved", is(true)));
+	}
+
+	@Test
+	public void testGetBookingIdDetails() throws Exception {
+		final String bookingId = DigestUtils.md5DigestAsHex("152 1 A 1".getBytes());
+		mvc.perform(get("/booking/details/bookings/" + bookingId))
+				.andExpect(status().isNotFound());
+		mvc.perform(post("/booking/book/flights/152/rows/1/seats/A/")
+				.contentType(MediaType.APPLICATION_JSON).content("{\"id\":1}"));
+		mvc.perform(get("/booking/details/bookings/" + bookingId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.reserved", is(true)))
+				.andExpect(jsonPath("$.price", nullValue()));
+		mvc.perform(put("/booking/pay/bookings/" + bookingId)
+				.contentType(MediaType.APPLICATION_JSON).content("{\"price\":300}"))
+				.andExpect(status().isOk());
+		mvc.perform(get("/booking/details/bookings/" + bookingId))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.reserved", is(true)))
+				.andExpect(jsonPath("$.price", is(300)));
 	}
 }
