@@ -45,7 +45,7 @@ public class BookingService {
 	private int defaultBookingExpiration;
 
 	/**
-	 * Get a specified
+	 * Get a specified flight by its flight number.
 	 * @param flightNumber the flight-number of a flight
 	 * @return the flight with that number, or null if there
 	 */
@@ -56,6 +56,16 @@ public class BookingService {
 		} else {
 			return list.get(0);
 		}
+	}
+
+	/**
+	 * Get a specified ticket by its flight and seat location.
+	 * @param seat the flight and seat location desired
+	 * @return the ticket, booked or not, for that seat
+	 * @throws NoSuchElementException if no such seat in the database
+	 */
+	public Ticket getTicket(final SeatLocation seat) {
+		return ticketDao.findById(seat).get();
 	}
 
 	/**
@@ -96,24 +106,26 @@ public class BookingService {
 		}
 		ticket.setReserver(user);
 		ticket.setReservationTimeout(timeout);
-		ticket.setBookingId(DigestUtils.md5DigestAsHex(new StringBuilder()
-				.append(Integer.toString(seat.getFlight().getFlightNumber()))
-				.append(' ').append(Integer.toString(seat.getRow())).append(' ')
-				.append(seat.getSeat()).append(' ')
-				.append(Integer.toString(user.getId())).toString().getBytes()));
+		ticket.setBookingId(
+				DigestUtils.md5DigestAsHex(String
+						.format("%d %d %s %d", seat.getFlight().getFlightNumber(),
+								seat.getRow(), seat.getSeat(), user.getId())
+						.getBytes()));
 		ticketDao.saveAndFlush(ticket);
 		return ticket;
 	}
 
 	/**
-	 * Mark the given ticket as having been paid for at the specified price. TODO:
-	 * Should we only allow the ticket-holder to pay for it?
+	 * Mark the given ticket as having been paid for at the specified price. If the
+	 * ticket has already been paid for at that price, this is a no-op. TODO: Should
+	 * we only allow the ticket-holder to pay for it?
 	 *
 	 * @param ticket the ticket in question
 	 * @param price  the price the ticket-holder paid
 	 * @return the updated booking information
-	 * @throws IllegalArgumentException if ticket is not booked or has already been
-	 *                                  paid for
+	 * @throws IllegalArgumentException if ticket is not booked
+	 * @throws IllegalStateException    if ticket has already been paid for at a
+	 *                                  different price.
 	 */
 	@Transactional
 	public Ticket acceptPayment(final Ticket ticket, final int price) {
@@ -121,7 +133,11 @@ public class BookingService {
 		if (booking.getReserver() == null) {
 			throw new IllegalArgumentException("Ticket is not booked");
 		} else if (booking.getPrice() != null) {
-			throw new IllegalArgumentException("Ticket has already been paid for");
+			if (booking.getPrice().equals(price)) {
+				return booking;
+			} else {
+				throw new IllegalStateException("Ticket has already been paid for");
+			}
 		}
 		booking.setPrice(price);
 		ticketDao.saveAndFlush(booking);
@@ -131,10 +147,14 @@ public class BookingService {
 	/**
 	 * Mark the ticket with the given booking ID as having been paid for at the
 	 * specified price.
+	 *
 	 * @param bookingId the booking-ID for the ticket in question.
-	 * @param price the price the ticket-holder paid
+	 * @param price     the price the ticket-holder paid
 	 * @return the updated booking information
-	 * @throws IllegalArgumentException if that booking ID does not refer to a booked ticket or if the ticket has already been paid for
+	 * @throws IllegalArgumentException if that booking ID does not refer to a
+	 *                                  booked ticket
+	 * @throws IllegalStateException    if ticket has already been paid for at a
+	 *                                  different price.
 	 */
 	public Ticket acceptPayment(final String bookingId, final int price) {
 		final List<Ticket> matchingTickets = ticketDao.findByBookingId(bookingId);
@@ -175,6 +195,7 @@ public class BookingService {
 	 * @param bookingId the booking ID of the booking in question
 	 * @throws IllegalArgumentException if the ticket has been paid for
 	 */
+	@Transactional
 	public void cancelPendingReservation(final String bookingId) {
 		final List<Ticket> matchingTickets = ticketDao.findByBookingId(bookingId);
 		if (!matchingTickets.isEmpty()) {
@@ -182,6 +203,59 @@ public class BookingService {
 				throw new IllegalStateException("Uniqueness constraint violated");
 			} else {
 				cancelPendingReservation(matchingTickets.get(0));
+			}
+		}
+	}
+
+	/**
+	 * Extend the reservation timeout for a reservation that has been made but not
+	 * paid for. TODO: keep track of how much the timeout has been extended, and
+	 * limit it to a maximum value.
+	 *
+	 * @param ticket the booking in question (only the ID fields are used)
+	 * @throws IllegalArgumentException if ticket is not booked
+	 * @throws IllegalStateException    if ticket has already been paid for at a
+	 * @throws NoSuchElementException if no such ticket is in the database
+	 */
+	@Transactional
+	public void extendReservationTimeout(final Ticket ticket) {
+		final Ticket booking = ticketDao.findById(ticket.getId()).get();
+		if (booking.getReserver() == null) {
+			throw new IllegalArgumentException("Ticket not booked");
+		} else if (booking.getPrice() != null) {
+			throw new IllegalStateException("Ticket has already been paid for");
+		} else {
+			booking.setReservationTimeout(
+					LocalDateTime.now().plusMinutes(defaultBookingExpiration));
+			ticketDao.save(booking);
+		}
+	}
+	/**
+	 * Extend the reservation timeout for a reservation that has been made but not
+	 * paid for. TODO: keep track of how much the timeout has been extended, and
+	 * limit it to a maximum value.
+	 *
+	 * @param bookingId the booking-ID for the ticket in question.
+	 * @throws IllegalArgumentException if that booking ID does not refer to a
+	 *                                  booked ticket
+	 * @throws IllegalStateException    if ticket has already been paid for, or the
+	 *                                  uniqueness constraint is violated
+	 */
+	@Transactional
+	public void extendReservationTimeout(final String bookingId) {
+		final List<Ticket> matchingTickets = ticketDao.findByBookingId(bookingId);
+		if (matchingTickets.isEmpty()) {
+			throw new IllegalArgumentException("No such ticket");
+		} else if (matchingTickets.size() > 1) {
+			throw new IllegalStateException("Uniqueness constraint violated");
+		} else {
+			final Ticket booking = matchingTickets.get(0);
+			if (booking.getPrice() != null) {
+				throw new IllegalStateException("Ticket has already been paid for");
+			} else {
+				booking.setReservationTimeout(
+						LocalDateTime.now().plusMinutes(defaultBookingExpiration));
+				ticketDao.save(booking);
 			}
 		}
 	}
