@@ -57,7 +57,7 @@ public class Flight implements Serializable {
 	 * The airport to which the flight will arrive.
 	 */
 	@ManyToOne
-	@JoinColumn
+	@JoinColumn(name="destination")
 	private Airport destination;
 	/**
 	 * The date and time the flight is scheduled to arrive.
