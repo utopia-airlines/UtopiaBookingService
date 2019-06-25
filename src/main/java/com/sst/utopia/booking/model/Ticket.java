@@ -10,6 +10,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
@@ -198,6 +199,7 @@ public class Ticket {
 	/**
 	 * @return whether this object's state is internally consistent.
 	 */
+	@JsonIgnore
 	public boolean isValid() {
 		if (reserver == null) {
 			return reservationTimeout == null && price == null && bookingId == null;
