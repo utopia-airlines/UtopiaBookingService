@@ -69,6 +69,23 @@ public class BookingService {
 	}
 
 	/**
+	 * Get a specified ticket by its booking ID, or null if not found.
+	 * @param bookingId the booking ID for the ticket.
+	 * @return the ticket
+	 * @throws IllegalStateException if the uniqueness constraint is violated.
+	 */
+	public Ticket getBooking(final String bookingId) {
+		final List<Ticket> list = ticketDao.findByBookingId(bookingId);
+		if (list.isEmpty()) {
+			return null;
+		} else if (list.size() > 1) {
+			throw new IllegalStateException("Uniqueness constraint violated");
+		} else {
+			return list.get(0);
+		}
+	}
+
+	/**
 	 * Book a ticket for the specified seat (on the specified flight) for the
 	 * specified user.
 	 *
