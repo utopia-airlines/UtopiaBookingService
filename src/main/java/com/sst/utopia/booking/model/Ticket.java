@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 /**
  * A ticket, or seat (for which a ticket may be or may have been sold), on a
@@ -37,6 +38,7 @@ public class Ticket {
 	 * What flight this seat/ticket is for, and where in the plane it is.
 	 */
 	@EmbeddedId
+	@JsonUnwrapped
 	private SeatLocation id;
 	/**
 	 * What class of seat this is. For now first class is "1", business class is
