@@ -3,6 +3,8 @@ package com.sst.utopia.booking.controller;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,6 +54,10 @@ public class BookingController {
 					HttpStatus.CREATED);
 		} catch (final IllegalArgumentException except) {
 			return new ResponseEntity<>(HttpStatus.CONFLICT);
+		} catch (final DataIntegrityViolationException|InvalidDataAccessApiUsageException except) {
+			// FIXME: This might well also catch exceptions when flight/row/seat isn't in DB
+			// TODO: Should it be UNAUTHORIZED instead?
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		} catch (final Exception except) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
