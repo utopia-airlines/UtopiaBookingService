@@ -6,13 +6,15 @@ node {
     stage('Add application.properties') {
         sh label: 'Remove old application.properties', script: 'rm -f src/main/resources/application.properties';
 
-        writeFile encoding: 'UTF-8', file: 'src/main/resources/application.properties', text: '''spring.datasource.driverClassName=com.mysql.cj.jdbc.Driver
+        writeFile encoding: 'UTF-8', file: 'src/main/resources/application.properties', text: """spring.datasource.driverClassName=com.mysql.cj.jdbc.Driver
 spring.mvc.throw-exception-if-no-handler-found=true
 spring.resources.add-mappings=false
 spring.jpa.hibernate.ddl-auto = update
 spring.jpa.hibernate.naming.implicit-strategy=org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
-spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl''';
-        sh label: 'Add sensitive details to application.properties', script: "printf \'\n%s\n%s\n%s\n\' \'spring.datasource.url=jdbc:mysql://${params.RDSURL}\' \'spring.datasource.username=${params.RDSUser}\' \'spring.datasource.password=${params.RDSPassword}\' >> src/main/resources/application.properties"
+spring.jpa.hibernate.naming.physical-strategy=org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+spring.datasource.url=jdbc:mysql://${params.RDSURL}
+spring.datasource.username=${params.RDSUser}
+spring.datasource.password=${params.RDSPassword}""";
     }
    
     stage("build") {
