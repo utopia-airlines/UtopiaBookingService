@@ -1,5 +1,8 @@
 properties([parameters([string(defaultValue: 'booking-0.0.1-SNAPSHOT.jar', description: 'Name of the artifact to be deployed', name: 'ArtifactName', trim: true), string(defaultValue: 'us-east-1', description: 'AWS region to deploy the stack in', name: 'AWSRegion', trim: true), string(defaultValue: '', description: 'Name to give the stack', name: 'StackName'), string(defaultValue: '', description: 'The S3 bucket the artifact should be taken from and endpoint URL placed in', name: 'TargetBucket', trim: false)])]);
 node {
+    stage("Source"){
+        git branch: 'elk-monitoring', url: 'https://github.com/kingjon3377/UtopiaBookingService.git';
+    }
     stage('Delete previous cloud formation stack') {
         sh label: 'Delete old cloud formation', script: 'aws --region us-east-1 cloudformation delete-stack --stack-name booking-service-auto-gen'
         sh label: 'Wait for the deletion of cloud formation', script: 'aws --region us-east-1 cloudformation wait stack-delete-complete --stack-name booking-service-auto-gen || true'
