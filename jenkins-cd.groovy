@@ -10,7 +10,16 @@ node {
 
     stage('Create parameters file') {
         sh label: 'Remove old parameters file', script: 'rm -f cloud-formation-params.json';
-        sh label: 'Create parameters file', script: "printf '[{%s},\n{%s}]\n' '{\"ParameterKey\": \"JarFileSource\",\"ParameterValue\": \"s3://${params.TargetBucket}/${params.ArtifactName}\"}' '{\"ParameterKey\": \"JarFileName\",\"ParameterValue\": \"${params.ArtifactName}\"}' > cloud-formation-params.json"
+        writeFile encoding: 'UTF-8', file: 'cloud-formation-params.json', text: """[
+  {
+    "ParameterKey": "JarFileSource",
+    "ParameterValue": "s3://${params.TargetBucket}/${params.ArtifactName}"
+  },
+  {
+    "ParamaterKey": "JarFileName",
+    "ParameterValue": "${params.ArtifactName}"
+  }
+]"""
     }
 
     stage('Create cloud-formation stack') {
