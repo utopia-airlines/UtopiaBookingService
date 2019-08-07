@@ -2,7 +2,8 @@
   "Description": "Create an EC2 instance by AWS CloudFormation",
   "Parameters": {
     "JarFileSource": {"Type": "String"},
-    "JarFileName": {"Type": "String"}
+    "JarFileName": {"Type": "String"},
+    "IAMRoleName": {"Type": "String"}
   },
   "Resources": {
     "EC2InstanceDemoSvr": {
@@ -29,7 +30,7 @@
             ]]
           }
         },
-        "IamInstanceProfile" : "S3role",
+        "IamInstanceProfile" : {"Ref": "IAMRoleName"},
         "ImageId": "ami-0c6b1d09930fac512",
         "InstanceType": "t2.micro",
         "KeyName": "myKey",

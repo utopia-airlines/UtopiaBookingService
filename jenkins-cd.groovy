@@ -10,7 +10,7 @@ node {
 
     stage('Create parameters file') {
         sh label: 'Remove old parameters file', script: 'rm -f cloud-formation-params.json';
-        withCredentials([string(credentialsId: 'TargetBucket', variable: 'TargetBucket')]) {
+        withCredentials([string(credentialsId: 'TargetBucket', variable: 'TargetBucket'), string(credentialsId: 'IAMRole', variable: 'IAMRole')]) {
             writeFile encoding: 'UTF-8', file: 'cloud-formation-params.json', text: """[
   {
     "ParameterKey": "JarFileSource",
@@ -19,6 +19,10 @@ node {
   {
     "ParameterKey": "JarFileName",
     "ParameterValue": "${params.ArtifactName}"
+  },
+  {
+    "ParameterKey": "IAMRoleName",
+    "ParameterValue": "${IAMRole}"
   }
 ]"""
         }
