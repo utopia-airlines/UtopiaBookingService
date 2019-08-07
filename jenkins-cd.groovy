@@ -17,7 +17,7 @@ node {
     "ParameterValue": "s3://${TargetBucket}/${params.ArtifactName}"
   },
   {
-    "ParamaterKey": "JarFileName",
+    "ParameterKey": "JarFileName",
     "ParameterValue": "${params.ArtifactName}"
   }
 ]"""
