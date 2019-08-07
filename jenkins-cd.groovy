@@ -4,8 +4,8 @@ node {
         git branch: 'elk-monitoring', url: 'https://github.com/kingjon3377/UtopiaBookingService.git';
     }
     stage('Delete previous cloud formation stack') {
-        sh label: 'Delete old cloud formation', script: 'aws --region us-east-1 cloudformation delete-stack --stack-name booking-service-auto-gen'
-        sh label: 'Wait for the deletion of cloud formation', script: 'aws --region us-east-1 cloudformation wait stack-delete-complete --stack-name booking-service-auto-gen || true'
+        sh label: 'Delete old cloud formation', script: "aws --region us-east-1 cloudformation delete-stack --stack-name ${params.StackName}"
+        sh label: 'Wait for the deletion of cloud formation', script: "aws --region us-east-1 cloudformation wait stack-delete-complete --stack-name ${params.StackName} || true"
     }
 
     stage('Create parameters file') {
