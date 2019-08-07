@@ -3,7 +3,8 @@
   "Parameters": {
     "JarFileSource": {"Type": "String"},
     "JarFileName": {"Type": "String"},
-    "IAMRoleName": {"Type": "String"}
+    "IAMRoleName": {"Type": "String"},
+    "EC2KeyName": {"Type": "String"}
   },
   "Resources": {
     "EC2InstanceDemoSvr": {
@@ -33,7 +34,7 @@
         "IamInstanceProfile" : {"Ref": "IAMRoleName"},
         "ImageId": "ami-0c6b1d09930fac512",
         "InstanceType": "t2.micro",
-        "KeyName": "myKey",
+        "KeyName": {"Ref": "EC2KeyName"},
         "SecurityGroups":["launch-wizard-7"]
       }
     }
