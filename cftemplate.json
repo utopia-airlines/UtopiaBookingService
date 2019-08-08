@@ -25,7 +25,7 @@
           "Fn::Base64": {
             "Fn::Join": [ "\n", [
               "#!/bin/bash",
-              "yum install java-1.8.0-openjdk.x86_64",
+              "yum install -y java-1.8.0-openjdk.x86_64",
               {"Fn::Join": [ " ", ["aws s3 cp", {"Ref": "JarFileSource"}, "."]]},
               {"Fn::Join": [ " ", ["nohup java -jar", {"Ref": "JarFileName"}, "&"]]}
             ]]
