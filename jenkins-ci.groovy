@@ -25,7 +25,9 @@ spring.datasource.password=${RDSPassword}""";
     stage("archive") {
         archiveArtifacts 'target/*.jar';
         withCredentials([string(credentialsId: 'TargetBucket', variable: 'TargetBucket')]) {
-            s3Upload bucket: "${TargetBucket}", includePathPattern: 'target/*.jar';
+            dir("target") {
+                s3Upload bucket: "${TargetBucket}", includePathPattern: '*.jar';
+            }
         }
     }
 }
