@@ -3,10 +3,10 @@ node {
         git branch: 'elk-monitoring', url: 'https://github.com/kingjon3377/UtopiaBookingService.git';
     }
     stage('Add application.properties') {
-        sh label: 'Remove old application.properties', script: 'rm -f src/main/resources/application.properties';
+        sh label: 'Remove old properties file', script: 'rm -f src/main/resources/database-config.properties';
 
         withCredentials([string(credentialsId: 'RDSURL', variable: 'RDSURL'), usernamePassword(credentialsId: 'RDSCredentials', passwordVariable: 'RDSPassword', usernameVariable: 'RDSUser')]) {
-            writeFile encoding: 'UTF-8', file: 'src/main/resources/application.properties', text: """spring.datasource.driverClassName=com.mysql.cj.jdbc.Driver
+            writeFile encoding: 'UTF-8', file: 'src/main/resources/database-config.properties', text: """spring.datasource.driverClassName=com.mysql.cj.jdbc.Driver
 spring.mvc.throw-exception-if-no-handler-found=true
 spring.resources.add-mappings=false
 spring.jpa.hibernate.ddl-auto = update
