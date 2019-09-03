@@ -1,0 +1,55 @@
+{
+  "Description": "Create an EC2 instance by AWS CloudFormation",
+  "Parameters": {
+    "JarFileSource": {"Type": "String"},
+    "JarFileName": {"Type": "String"},
+    "IAMRoleName": {"Type": "String"},
+    "EC2KeyName": {"Type": "String"}
+  },
+  "Resources": {
+    "EC2InstanceDemoSvr": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "AvailabilityZone": "us-east-1a",
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "DeleteOnTermination": "true",
+              "VolumeSize": "8",
+              "VolumeType": "gp2"
+            }
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [ "\n", [
+              "#!/bin/bash",
+              "yum update -y",
+              "yum install -y java-1.8.0-openjdk-headless.x86_64",
+              {"Fn::Join": [ " ", ["aws s3 cp", {"Ref": "JarFileSource"}, "."]]},
+              {"Fn::Join": [ " ", ["nohup java -jar", {"Ref": "JarFileName"}, "&"]]}
+            ]]
+          }
+        },
+        "IamInstanceProfile" : {"Ref": "IAMRoleName"},
+        "ImageId": "ami-0c6b1d09930fac512",
+        "InstanceType": "t2.micro",
+        "KeyName": {"Ref": "EC2KeyName"},
+        "SecurityGroups":["launch-wizard-7"]
+      }
+    }
+  },
+
+  "Outputs" : {
+    "Ec2EndPoint": {
+      "Value": {
+        "Fn::GetAtt": [
+          "EC2InstanceDemoSvr",
+          "PublicDnsName"
+        ]
+      },
+      "Description": "public DNS"
+    }
+  }
+}
