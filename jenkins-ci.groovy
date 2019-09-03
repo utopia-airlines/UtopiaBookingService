@@ -17,7 +17,7 @@ spring.datasource.username=${RDSUser}
 spring.datasource.password=${RDSPassword}""";
         }
     }
-   
+
     stage("build") {
         sh 'mvn clean package';
     }
